@@ -1,6 +1,6 @@
 /*!
  * Vue.js v2.6.14
- * (c) 2014-2021 Evan You
+ * (c) 2014-2022 Evan You
  * Released under the MIT License.
  */
 /*  */
@@ -40,7 +40,7 @@ function isPrimitive (value) {
 
 /**
  * Quick object check - this is primarily used to tell
- * Objects from primitive values when we know the value
+ * objects from primitive values when we know the value
  * is a JSON-compliant type.
  */
 function isObject (obj) {
@@ -7599,7 +7599,8 @@ function add$1 (
         // #9448 bail if event is fired in another document in a multi-page
         // electron/nw.js app, since event.timeStamp will be using a different
         // starting reference
-        e.target.ownerDocument !== document
+        e.target.ownerDocument !== document ||
+        e.currentTarget.contains(e.target)
       ) {
         return original.apply(this, arguments)
       }
@@ -7633,7 +7634,9 @@ function updateDOMListeners (oldVnode, vnode) {
   }
   const on = vnode.data.on || {};
   const oldOn = oldVnode.data.on || {};
-  target$1 = vnode.elm;
+  // vnode is empty when removing all listeners,
+  // and use old vnode dom element
+  target$1 = vnode.elm || oldVnode.elm;
   normalizeEvents(on);
   updateListeners(on, oldOn, add$1, remove$2, createOnceHandler$1, vnode.context);
   target$1 = undefined;
@@ -7641,7 +7644,8 @@ function updateDOMListeners (oldVnode, vnode) {
 
 var events = {
   create: updateDOMListeners,
-  update: updateDOMListeners
+  update: updateDOMListeners,
+  destroy: (vnode) => updateDOMListeners(vnode, emptyNode)
 };
 
 /*  */
@@ -9187,7 +9191,7 @@ function transformNode (el, options) {
     }
   }
   if (staticClass) {
-    el.staticClass = JSON.stringify(staticClass);
+    el.staticClass = JSON.stringify(staticClass.replace(/\s+/g, ' ').trim());
   }
   const classBinding = getBindingAttr(el, 'class', false /* getStatic */);
   if (classBinding) {
