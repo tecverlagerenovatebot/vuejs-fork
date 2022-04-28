@@ -75,7 +75,8 @@ function add (
         // #9448 bail if event is fired in another document in a multi-page
         // electron/nw.js app, since event.timeStamp will be using a different
         // starting reference
-        e.target.ownerDocument !== document
+        e.target.ownerDocument !== document ||
+        e.currentTarget.contains(e.target)
       ) {
         return original.apply(this, arguments)
       }
